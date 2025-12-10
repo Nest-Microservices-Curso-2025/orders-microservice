@@ -5,21 +5,21 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationOrderDto } from './dto/pagination-order.dto';
 import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
-import { PRODUCT_SERVICES } from './../config/services';
+import { NATS_SERVICES } from './../config/services';
 import { Product } from './interfaces/product.interface';
 
 @Injectable()
 export class OrdersService {
   constructor(
     private readonly prismaService: PrismaService,
-    @Inject(PRODUCT_SERVICES) private readonly productsClient: ClientProxy,
+    @Inject(NATS_SERVICES) private readonly client: ClientProxy,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
     const productsIds = createOrderDto.items.map((item) => item.productId);
 
     const products: Product[] = await firstValueFrom(
-      this.productsClient
+      this.client
         .send<Product[]>({ cmd: 'validate_products' }, productsIds)
         .pipe(
           catchError((err: string | object) => {
@@ -121,7 +121,7 @@ export class OrdersService {
     const productIds = order.OrderItem.map((orderItem) => orderItem.productId);
 
     const products: Product[] = await firstValueFrom(
-      this.productsClient
+      this.client
         .send<Product[]>({ cmd: 'validate_products' }, productIds)
         .pipe(
           catchError((err: string | object) => {

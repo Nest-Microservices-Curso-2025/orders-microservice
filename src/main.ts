@@ -6,14 +6,14 @@ import { envs } from './config/envs';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const { port } = envs;
+  const { port, natsServers } = envs;
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
-      transport: Transport.TCP,
+      transport: Transport.NATS,
       options: {
-        port: port,
+        servers: natsServers,
       },
     },
   );
